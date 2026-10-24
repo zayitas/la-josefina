@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { menu, type MenuSection } from "@/lib/menu-data";
 import Image from "next/image";
-import PrintMenuButton from "./app/print-menu-button";
+import AutoPrintMenu from "./app/auto-print-menu";
 
 function DishSection({ section, index }: { section: (typeof menu)[number]; index: number }) {
   return (
@@ -69,6 +69,7 @@ export default async function Page() {
   const liveMenu = await loadMenu();
   return (
     <main>
+      <AutoPrintMenu />
       <header className="hero">
         <div className="hero-glow" />
         <nav className="topbar"><a className="wordmark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="Logo de La Josefina" width={70} height={70} priority /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><div className="nav-actions"><a className="admin-access" href="/admin" aria-label="Administración" title="Administración"><Image src="/images/logo-la-josefina.jpg" alt="" width={38} height={38} /></a></div></nav>
@@ -83,7 +84,7 @@ export default async function Page() {
       </header>
 
       <section className="menu-wrap" id="carta">
-        <div className="menu-intro"><div><span className="eyebrow">ALGO RICO TE ESTÁ ESPERANDO</span><h2>Nuestra carta<span>.</span></h2></div><div className="menu-intro-action"><p>Elegí tu clásico favorito. Todo preparado para que lo disfrutes.</p><PrintMenuButton /></div></div>
+        <div className="menu-intro"><div><span className="eyebrow">ALGO RICO TE ESTÁ ESPERANDO</span><h2>Nuestra carta<span>.</span></h2></div><p>Elegí tu clásico favorito. Todo preparado para que lo disfrutes.</p></div>
         <nav className="category-nav" aria-label="Categorías de la carta">{liveMenu.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}</nav>
         <div className="menu-grid">{liveMenu.map((section, index) => <DishSection key={section.id} section={section} index={index} />)}</div>
         <div className="menu-footnote"><span>✳</span><p>Precios expresados en pesos argentinos. Consultá disponibilidad al momento de pedir.</p></div>
@@ -104,9 +105,7 @@ export default async function Page() {
         .nav-actions{display:flex;align-items:center;gap:10px}.admin-access{width:38px;height:38px;display:grid;place-items:center;overflow:hidden;border-radius:50%;border:1px solid rgba(231,199,111,.55);background:#f7f0da;opacity:.82;transition:opacity .2s,transform .2s,border-color .2s;flex-shrink:0}.admin-access img{width:100%;height:100%;object-fit:cover}.admin-access:hover,.admin-access:focus-visible{opacity:1;transform:scale(1.06);border-color:#e7c76f}.admin-access:focus-visible{outline:2px solid #e7c76f;outline-offset:3px}
       `}</style>
       <style>{`
-        .menu-intro-action{display:grid;justify-items:start;gap:0;max-width:260px}.menu-intro-action>p{color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 4px}.print-menu-button{display:inline-flex;align-items:center;gap:9px;margin-top:15px;padding:10px 13px;border:1px solid var(--line);background:#fffefa;color:var(--ink);font:600 11px 'DM Sans',sans-serif;cursor:pointer}.print-menu-button svg{color:var(--orange)}
-        @media(max-width:700px){.menu-intro-action{margin-top:12px}.menu-intro-action>p{margin:0;font-size:12px}.print-menu-button{margin-top:12px}}
-        @media print{@page{size:A4 portrait;margin:14mm}body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}body *{visibility:hidden!important}.menu-wrap,.menu-wrap *{visibility:visible!important}.menu-wrap{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important}.menu-intro{display:flex!important;margin:0 0 14px!important}.menu-intro-action>p{font-size:10px!important}.print-menu-button,.category-nav{display:none!important}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.menu-card{break-inside:avoid;page-break-inside:avoid;background:#fff!important;padding:14px!important;border-color:#ddd!important}.menu-card:before{display:none!important}.card-heading h2{font-size:19px!important}.card-heading p,.dish-copy span{font-size:9px!important}.dish{padding:7px 0!important}.menu-footnote{margin-top:12px!important;font-size:8px!important}}
+        @media print{@page{size:A4 portrait;margin:14mm}body{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}body *{visibility:hidden!important}.menu-wrap,.menu-wrap *{visibility:visible!important}.menu-wrap{position:absolute!important;left:0!important;top:0!important;width:100%!important;max-width:none!important;margin:0!important;padding:0!important;background:#fff!important}.menu-intro{display:flex!important;margin:0 0 14px!important}.menu-intro>p{font-size:10px!important}.category-nav{display:none!important}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}.menu-card{break-inside:avoid;page-break-inside:avoid;background:#fff!important;padding:14px!important;border-color:#ddd!important}.menu-card:before{display:none!important}.card-heading h2{font-size:19px!important}.card-heading p,.dish-copy span{font-size:9px!important}.dish{padding:7px 0!important}.menu-footnote{margin-top:12px!important;font-size:8px!important}}
       `}</style>
     </main>
   );
