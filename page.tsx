@@ -1,78 +1,8 @@
 import React from "react";
+import { connection } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { menu, type MenuSection } from "@/lib/menu-data";
 import Image from "next/image";
-
-const menu = [
-  {
-    id: "lomitos", title: "Lomitos", note: "Carne tierna, pan calentito y mucho sabor.", items: [
-      ["Común", "Mayonesa y queso", "$8.000"],
-      ["Especial", "Lechuga, tomate, jamón, queso, huevo y mayonesa", "$10.000"],
-      ["Súper", "Lechuga, tomate, jamón, queso, huevo, mayonesa y roquefort", "$12.000"],
-    ],
-  },
-  {
-    id: "hamburguesas", title: "Hamburguesas", note: "Hechas para disfrutar hasta el último bocado.", items: [
-      ["Común", "Mayonesa y queso", "$6.000"],
-      ["Especial", "Lechuga, tomate, jamón, queso, huevo y mayonesa", "$8.000"],
-      ["Súper", "Lechuga, tomate, jamón, queso, huevo, mayonesa, roquefort y 2 patys", "$13.000"],
-    ],
-  },
-  {
-    id: "tostados", title: "Tostados", note: "Doraditos, abundantes y recién hechos.", items: [
-      ["Común", "Triple de jamón y queso", "$6.000"],
-      ["Especial primavera", "Jamón, queso, lechuga, tomate, huevo y mayonesa", "$7.000"],
-    ],
-  },
-  {
-    id: "picadas", title: "Picadas", note: "Para compartir. Papas fritas, milanesas, aceitunas, pan y aderezos.", items: [
-      ["Para 2 personas", "Una picada completa para compartir", "$18.000"],
-      ["Para 4 personas", "Una picada completa para compartir", "$32.000"],
-      ["Súper pancho", "", "$3.500"],
-    ],
-  },
-  {
-    id: "milanesas", title: "Milanesas", note: "Con guarnición de papas fritas.", items: [
-      ["Mila con papas", "", "$12.000"], ["Mila napolitana", "", "$14.000"], ["Fugazzeta", "", "$14.000"],
-      ["Caballo", "", "$14.000"], ["Cuatro queso", "", "$14.000"], ["Americana", "", "$14.000"],
-    ],
-  },
-  {
-    id: "sandwiches", title: "Sándwiches de milanesa", note: "Elegí tu favorito, siempre bien completo.", items: [
-      ["Común", "Lechuga, tomate y mayonesa", "$8.000"],
-      ["Especial", "Lechuga, tomate, jamón, queso, huevo y mayonesa", "$10.000"],
-      ["De marinera", "Lechuga, tomate y mayonesa", "$8.000"],
-    ],
-  },
-  {
-    id: "pizzas", title: "Pizzas", note: "Clásicas para cualquier plan.", items: [
-      ["Muzza", "", "$10.000"], ["Napolitana", "", "$12.000"], ["Calabresa", "", "$14.000"], ["Especial", "", "$14.000"],
-      ["Roquefort", "", "$14.000"], ["Rúcula", "", "$14.000"], ["Huevo frito", "", "$14.000"], ["La Josefina", "", "$15.000"],
-    ],
-  },
-  {
-    id: "empanadas", title: "Empanadas", note: "Elegí tus gustos favoritos.", items: [
-      ["Carne", "", ""], ["Carne cortada a cuchillo", "", ""], ["Jamón y queso", "", ""], ["Cebolla y queso", "", ""],
-      ["Choclo y queso", "", ""], ["Acelga y queso", "", ""], ["Pollo", "", ""], ["Capresse", "", ""], ["Roquefort", "", ""],
-    ],
-    extras: [["La docena", "$14.000"], ["Unidad", "$1.200"], ["20 surtidas", "$20.000"]],
-  },
-  {
-    id: "papas", title: "Papas fritas", note: "Para picar, compartir o no compartir.", items: [
-      ["Papas fritas", "", "$7.000"], ["Papas americanas", "", "$10.000"], ["Salchipapas", "", "$10.000"],
-      ["Hamburpapas", "", "$10.000"], ["Lomipapas", "", "$10.000"],
-    ],
-  },
-  {
-    id: "promos", title: "Promos", note: "Un plan rico, resuelto.", items: [
-      ["2 hamburguesas especiales + papas", "", "$14.000"], ["2 lomitos especiales + papas", "", "$18.000"],
-      ["2 sándwiches de mila especiales + papas", "", "$18.000"], ["2 milanesas con papas", "", "$20.000"],
-      ["1 pizza + 6 empanadas + papas", "", "$20.000"], ["2 pizzas muzza", "", "$18.000"],
-      ["20 empanadas surtidas", "", "$20.000"], ["20 empanadas a elección", "", "$20.000"],
-      ["2 panchos + 2 vasitos de Coca", "", "$6.000"],
-    ],
-  },
-];
-
-const categories = ["Lomitos", "Hamburguesas", "Pizzas", "Empanadas", "Milanesas", "Papas fritas", "Promos"];
 
 function DishSection({ section, index }: { section: (typeof menu)[number]; index: number }) {
   return (
@@ -95,7 +25,47 @@ function DishSection({ section, index }: { section: (typeof menu)[number]; index
   );
 }
 
-export default function Page() {
+async function loadMenu(): Promise<MenuSection[]> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const storeSlug = process.env.NEXT_PUBLIC_STORE_SLUG || "la-josefina";
+  if (!url || !key) return menu;
+
+  try {
+    const supabase = createClient(url, key, { auth: { persistSession: false } });
+    const { data: store, error: storeError } = await supabase.from("stores").select("id").eq("slug", storeSlug).eq("active", true).maybeSingle();
+    if (storeError || !store) return menu;
+    const [{ data: sections, error: sectionError }, { data: products, error: productError }] = await Promise.all([
+      supabase.from("menu_sections").select("slug,title,description,position,active").eq("store_id", store.id).order("position"),
+      supabase.from("menu_products").select("section_slug,name,description,price,kind,position,active").eq("store_id", store.id).order("position"),
+    ]);
+    if (sectionError || productError || !sections?.length || !products) return menu;
+
+    return sections.filter((section) => section.active).map((section) => {
+      const sectionProducts = products.filter((product) => product.section_slug === section.slug && product.active);
+      return {
+        id: section.slug,
+        title: section.title,
+        note: section.description,
+        items: sectionProducts.filter((product) => product.kind === "dish").map((product) => [
+          product.name,
+          product.description ?? "",
+          product.price === null ? "" : `$${Number(product.price).toLocaleString("es-AR")}`,
+        ] as [string, string, string]),
+        extras: sectionProducts.filter((product) => product.kind === "price_option").map((product) => [
+          product.name,
+          product.price === null ? "" : `$${Number(product.price).toLocaleString("es-AR")}`,
+        ] as [string, string]),
+      };
+    });
+  } catch {
+    return menu;
+  }
+}
+
+export default async function Page() {
+  await connection();
+  const liveMenu = await loadMenu();
   return (
     <main>
       <header className="hero">
@@ -113,11 +83,11 @@ export default function Page() {
 
       <section className="menu-wrap" id="carta">
         <div className="menu-intro"><div><span className="eyebrow">ALGO RICO TE ESTÁ ESPERANDO</span><h2>Nuestra carta<span>.</span></h2></div><p>Elegí tu clásico favorito. Todo preparado para que lo disfrutes.</p></div>
-        <nav className="category-nav" aria-label="Categorías de la carta">{categories.map((name) => { const id = name.toLowerCase().replaceAll(" ", "-"); return <a key={name} href={`#${id}`}>{name}<span>↗</span></a>; })}</nav>
-        <div className="menu-grid">{menu.map((section, index) => <DishSection key={section.id} section={section} index={index} />)}</div>
+        <nav className="category-nav" aria-label="Categorías de la carta">{liveMenu.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}<span>↗</span></a>)}</nav>
+        <div className="menu-grid">{liveMenu.map((section, index) => <DishSection key={section.id} section={section} index={index} />)}</div>
         <div className="menu-footnote"><span>✳</span><p>Precios expresados en pesos argentinos. Consultá disponibilidad al momento de pedir.</p></div>
       </section>
-      <footer><a className="wordmark footer-mark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="" width={60} height={60} /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><span>Hecho con cariño, servido con abundancia.</span><a href="#inicio">VOLVER ARRIBA ↑</a></footer>
+      <footer><a className="wordmark footer-mark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="" width={60} height={60} /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><span>Hecho con cariño, servido con abundancia.</span><a href="/admin">ADMINISTRAR CARTA</a><a href="#inicio">VOLVER ARRIBA ↑</a></footer>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
