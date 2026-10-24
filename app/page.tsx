@@ -87,7 +87,7 @@ export default async function Page() {
         <div className="menu-grid">{liveMenu.map((section, index) => <DishSection key={section.id} section={section} index={index} />)}</div>
         <div className="menu-footnote"><span>✳</span><p>Precios expresados en pesos argentinos. Consultá disponibilidad al momento de pedir.</p></div>
       </section>
-      <footer><a className="wordmark footer-mark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="" width={60} height={60} /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><span>Hecho con cariño, servido con abundancia.</span><a href="#inicio">VOLVER ARRIBA ↑</a></footer>
+      <footer><a className="wordmark footer-mark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="" width={60} height={60} /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><span>Hecho con cariño, servido con abundancia.</span><a href="#inicio">VOLVER ARRIBA</a></footer>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
