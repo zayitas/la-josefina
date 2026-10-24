@@ -70,7 +70,7 @@ export default async function Page() {
     <main>
       <header className="hero">
         <div className="hero-glow" />
-        <nav className="topbar"><a className="wordmark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="Logo de La Josefina" width={70} height={70} priority /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><div className="nav-actions"><a className="nav-cta" href="#carta">Ver la carta</a><a className="admin-access" href="/admin" aria-label="Administración" title="Administración"><Image src="/images/logo-la-josefina.jpg" alt="" width={38} height={38} /></a></div></nav>
+        <nav className="topbar"><a className="wordmark" href="#inicio"><span className="logo-frame"><Image src="/images/logo-la-josefina.jpg" alt="Logo de La Josefina" width={70} height={70} priority /></span><span>LA JOSEFINA<small>LOMITERÍA · CASA DE COMIDAS</small></span></a><div className="nav-actions"><a className="admin-access" href="/admin" aria-label="Administración" title="Administración"><Image src="/images/logo-la-josefina.jpg" alt="" width={38} height={38} /></a></div></nav>
         <div className="hero-content" id="inicio">
           <span className="hero-kicker"><i /> HECHO CON GANAS, PARA COMPARTIR</span>
           <h1>El sabor de<br /><em>sentirse en casa.</em></h1>
